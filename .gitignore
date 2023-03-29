@@ -1,2 +1,4 @@
 .direnv
 cmake-build-debug
+.idea
+.envrc
