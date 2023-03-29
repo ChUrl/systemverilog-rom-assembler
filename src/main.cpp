@@ -68,24 +68,20 @@ auto write(const std::string &output_file, const std::vector<std::string> &outpu
         return false;
     }
 
+    // TODO: Output the assembly in a comment next to the case entry
     ofs << "`default_nettype none\n\n"
-
         << "module ROM(\n"
         << "  input var logic[7:0] address,\n"
         << "  output var logic[7:0] dataout\n"
         << ");\n\n"
-
         << "  always @(address) case (address)\n";
-
     for (uint32_t i = 0; i <= 255; ++i) {
         if (i < output_string.size()) {
-            ofs << "    case 8'b" << std::bitset<8>(i).to_string() << ": dataout = 8'b" << output_string[i] << ";\n";
+            ofs << "    8'b" << std::bitset<8>(i).to_string() << ": dataout = 8'b" << output_string[i] << ";\n";
         }
     }
-
     ofs << "    default: dataout = 8'b00000000;\n"
         << "  endcase\n\n"
-
         << "endmodule" << std::endl;
 
     ofs.flush();
