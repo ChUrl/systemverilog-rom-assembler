@@ -1,19 +1,19 @@
-#include <iostream>
+#include "ast/Node.h"
+#include "codegen/CodegenObserver.h"
+#include "codegen/PrintObserver.h"
+#include "lexer/Lexer.h"
+#include "parser/Parser.h"
+#include <bitset>
+#include <boost/program_options.hpp>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <boost/program_options.hpp>
-#include <boost/format.hpp>
-#include <iomanip>
-#include "lexer/Lexer.h"
-#include "ast/Node.h"
-#include "parser/Parser.h"
-#include "codegen/PrintObserver.h"
-#include "codegen/CodegenObserver.h"
 
 namespace po = boost::program_options;
 
-auto read(const std::string& input_file, std::string &input_string) -> bool {
+auto read(const std::string &input_file, std::string &input_string) -> bool {
     std::ifstream ifs;
     ifs.open(input_file, std::ios_base::in);
     if (!ifs) {
@@ -54,6 +54,7 @@ auto parse(std::vector<Token> &tokens) -> std::unique_ptr<Node> {
     return std::move(parser.parse());
 }
 
+// TODO: Modularize the output generation, I want different generators for different formats
 auto write(const std::string &output_file, const std::vector<std::string> &output_string) -> bool {
     if (output_string.size() > 255) {
         std::cout << "Program too large!" << std::endl;
@@ -67,21 +68,25 @@ auto write(const std::string &output_file, const std::vector<std::string> &outpu
         return false;
     }
 
-    ofs << "v3.0 hex words addressed";
-    for (uint32_t i = 0; i <= 255; ++i) {
-        if (i % 16 == 0) {
-            ofs << std::endl;
-            // Print Address
-            std::string address = (boost::format("%x") % i).str();
-            ofs << (address == "0" ? "00" : address) << ": ";
-        }
+    ofs << "`default_nettype none\n\n"
 
+        << "module ROM(\n"
+        << "  input var logic[7:0] address,\n"
+        << "  output var logic[7:0] dataout\n"
+        << ");\n\n"
+
+        << "  always @(address) case (address)\n";
+
+    for (uint32_t i = 0; i <= 255; ++i) {
         if (i < output_string.size()) {
-            ofs << output_string[i] << " ";
-        } else {
-            ofs << "00 ";
+            ofs << "    case 8'b" << std::bitset<8>(i).to_string() << ": dataout = 8'b" << output_string[i] << ";\n";
         }
     }
+
+    ofs << "    default: dataout = 8'b00000000;\n"
+        << "  endcase\n\n"
+
+        << "endmodule" << std::endl;
 
     ofs.flush();
     ofs.close();
@@ -91,10 +96,7 @@ auto write(const std::string &output_file, const std::vector<std::string> &outpu
 auto main(int argc, char **argv) -> int {
     // Argument parsing straight from the Boost manual: https://www.boost.org/doc/libs/1_60_0/doc/html/program_options/tutorial.html
     po::options_description desc("Allowed options");
-    desc.add_options()
-            ("help,h", "Show this help message")
-            ("input,i", po::value<std::string>(), "Input file")
-            ("output,o", po::value<std::string>(), "Output file");
+    desc.add_options()("help,h", "Show this help message")("input,i", po::value<std::string>(), "Input file")("output,o", po::value<std::string>(), "Output file");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);

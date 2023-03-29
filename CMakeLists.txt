@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(Boost 1.81 COMPONENTS program_options REQUIRED)
 
-add_executable(lasm
+add_executable(svrasm
         src/main.cpp
         src/lexer/Token.cpp
         src/lexer/Lexer.cpp
@@ -25,4 +25,4 @@ add_executable(lasm
         src/codegen/CodegenObserver.cpp
         )
 
-target_link_libraries(lasm Boost::program_options)
+target_link_libraries(svrasm Boost::program_options)
