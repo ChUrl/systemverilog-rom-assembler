@@ -6,9 +6,9 @@ module ROM(
 );
 
   always @(address) case (address)
-    8'b00000000: dataout = 8'b11000000;
-    8'b00000001: dataout = 8'b00000000;
-    8'b00000010: dataout = 8'b11000100;
+    8'b00000001: dataout = 8'b11000000;
+    8'b00000010: dataout = 8'b00000000;
+    8'b00000011: dataout = 8'b11000100;
     default: dataout = 8'b00000000;
   endcase
 
