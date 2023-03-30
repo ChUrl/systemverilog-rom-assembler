@@ -75,9 +75,11 @@ auto write(const std::string &output_file, const std::vector<std::string> &outpu
         << "  output var logic[7:0] dataout\n"
         << ");\n\n"
         << "  always @(address) case (address)\n";
-    for (uint32_t i = 0; i <= 255; ++i) {
+    for (uint32_t i = 0; i < 255; ++i) {
         if (i < output_string.size()) {
-            ofs << "    8'b" << std::bitset<8>(i).to_string() << ": dataout = 8'b" << output_string[i] << ";\n";
+            ofs << "    8'b" << std::bitset<8>(i + 1).to_string() << ": dataout = 8'b" << output_string[i] << ";\n";
+        } else {
+            break;
         }
     }
     ofs << "    default: dataout = 8'b00000000;\n"
